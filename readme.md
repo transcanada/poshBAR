@@ -17,3 +17,4 @@ Install via [NuGet](https://www.nuget.org/packages/poshBAR)
 ###License###
 
 [Microsoft Public License (Ms-PL)](http://www.microsoft.com/en-us/openness/licenses.aspx#MPL)
+ 
