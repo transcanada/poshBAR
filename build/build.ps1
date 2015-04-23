@@ -9,7 +9,7 @@ $script:this = @{
     devopsNugetPackage = "$baseDir\nuspec\poshBAR.nuspec"
     devopsSummary = "Powershell Build `$amp; Release"
 }
-
+ 
 # Dogfood
 Import-Module "$($this.modulesDir)\poshBAR" -force
 
