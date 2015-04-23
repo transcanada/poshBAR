@@ -28,15 +28,27 @@ $appcmd = "$env:windir\system32\inetsrv\appcmd.exe"
 function New-AppPool{
     [CmdletBinding()]
     param(
-        [parameter(Mandatory=$true, position=0)] [string] $appPoolName,
-        [parameter(Mandatory=$false,position=1)] [string] [ValidateSet('LocalSystem','LocalService','NetworkService','SpecificUser','ApplicationPoolIdentity')] $appPoolIdentityType = 'NetworkService',
-        [parameter(Mandatory=$false,position=2)] [int] $maxProcesses = 1,
-        [parameter(Mandatory=$false,position=3)] [string] $username,
-        [parameter(Mandatory=$false,position=4)] [string] $password,
-        [parameter(Mandatory=$false,position=5)] [string] [ValidateSet('Integrated','Classic')] $managedPipelineMode = 'Integrated',
-        [parameter(Mandatory=$false,position=6)] [string] $managedRuntimeVersion = "v4.0",
-        [parameter(Mandatory=$false,position=7)] [switch] $alwaysRunning
+        [parameter(Mandatory=$true, position=0, ParameterSetName="b")] [Xml.XmlElement] $websiteSettings,
+        [parameter(Mandatory=$true, position=0, ParameterSetName="a")] [string] $appPoolName,
+        [parameter(Mandatory=$false,position=1, ParameterSetName="a")] [string] [ValidateSet('LocalSystem','LocalService','NetworkService','SpecificUser','ApplicationPoolIdentity')] $appPoolIdentityType = 'NetworkService',
+        [parameter(Mandatory=$false,position=2, ParameterSetName="a")] [int] $maxProcesses = 1,
+        [parameter(Mandatory=$false,position=3, ParameterSetName="a")] [string] $username,
+        [parameter(Mandatory=$false,position=4, ParameterSetName="a")] [string] $password,
+         
+        [parameter(Mandatory=$false,position=5, ParameterSetName="a")]
+        [parameter(Mandatory=$false,position=1, ParameterSetName="b")] [string] [ValidateSet('Integrated','Classic')] $managedPipelineMode = 'Integrated',
+        
+        [parameter(Mandatory=$false,position=6, ParameterSetName="a")]
+        [parameter(Mandatory=$false,position=2, ParameterSetName="b")] [string] $managedRuntimeVersion = "v4.0",
+
+        [parameter(Mandatory=$false,position=7, ParameterSetName="a")]
+        [parameter(Mandatory=$false,position=3, ParameterSetName="b")] [switch] $alwaysRunning
     )
+
+    if($PsCmdlet.ParameterSetName -eq 'b'){
+        New-AppPool -appPoolName $($websiteSettings.appPool.name) -appPoolIdentityType $($websiteSettings.appPool.identityType) -maxProcesses $($websiteSettings.appPool.maxWorkerProcesses) -userName $($websiteSettings.appPool.userName) -password $($websiteSettings.appPool.password) -managedPipelineMode $managedPipelineMode -managedRuntimeVersion $managedRuntimeVersion -alwaysRunning:$alwaysRunning
+        return
+    }
 
     $exists = Confirm-AppPoolExists $appPoolName
 
@@ -59,7 +71,7 @@ function New-AppPool{
         Exec { Invoke-Expression  $newAppPool } -retry 10 | Out-Null
         Write-Host "`tDone" -f Green
     }else{
-        Update-AppPool $appPoolName $appPoolIdentityType $maxProcesses $username $password $managedPipelineMode $managedRuntimeVersion
+        Update-AppPool $appPoolName $appPoolIdentityType $maxProcesses $username $password $managedPipelineMode $managedRuntimeVersion $alwaysRunning
     }
 }    
 

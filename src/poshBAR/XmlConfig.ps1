@@ -46,11 +46,10 @@ function Update-XmlConfigValues
             if ($attributeName) {
                 if ($node.HasAttribute($attributeName)) {
                     $node.SetAttribute($attributeName, $value)
-                    #write message
                     Write-Host ($msgs.msg_updated_to -f "$xpath->$attributeName", $value)
                 } else {
-                    #write message
-                    Write-Host ($msgs.msg_wasnt_found -f $attributeName)
+                    $node.SetAttribute($attributeName, $value)  
+                    Write-Host ($msgs.msg_updated_to -f "$xpath->$attributeName", $value)
                 }
             } else {
                 if ($node.NodeType -eq "Element") {
@@ -77,7 +76,76 @@ function Update-XmlConfigValues
     $doc.Save($configFile)
 }
 
+function Remove-XmlConfigValue
+{
+    [CmdletBinding()]
+    param( 
+        [parameter(Mandatory=$true,position=0)] [string] $configFile,
+        [parameter(Mandatory=$true,position=1)] [string] $xpath
+    )
+	
+    $ErrorActionPreference = "Stop"
+	
+    $doc = New-Object System.Xml.XmlDocument;
+    $doc.Load($configFile)
 
+    $nodes = $doc.SelectNodes($xpath)
+ 
+    foreach ($node in $nodes) {
+        if ($node -ne $null) {			
+            $node.ParentNode.RemoveChild($node)
+		}
+	}
+    $doc.Save($configFile)
+}
+function Update-XmlConfigAttributes
+{
+    [CmdletBinding()]
+    param( 
+        [parameter(Mandatory=$true,position=0)] [string] $configFile,
+        [parameter(Mandatory=$true,position=1)] [string] $xpath,
+        [parameter(Mandatory=$true,position=3)] [hashtable] $attributes
+    )
+
+    $ErrorActionPreference = "Stop"
+
+    $doc = New-Object System.Xml.XmlDocument;
+    $doc.Load($configFile)
+
+    $nodes = $doc.SelectNodes($xpath)
+
+    $private:count = 0
+ 
+    foreach ($node in $nodes) {
+        if ($node -ne $null) {
+            $private:count++
+
+            foreach($attributekey in $attributes.Keys)
+            {
+                if ($node.HasAttribute($attributekey)) {
+                    $node.SetAttribute($attributekey, $attributes[$attributekey])
+                    #write message
+                    Write-Host ($msgs.msg_updated_to -f "$xpath->$attributeName", $attributes[$attributekey])
+                } else {
+                    $node.SetAttribute($attributekey, $attributes[$attributekey])
+                    #write message
+                    Write-Host ($msgs.msg_updated_to -f "$xpath->$attributeName", $attributes[$attributekey])
+                }
+            }
+        }
+        else {
+            #write message
+            Write-Host ($msgs.msg_wasnt_found -f $xpath)
+        }
+    }
+
+    if($private:count -eq 0) {
+        #write message
+        Write-Host ($msgs.msg_wasnt_found -f $xpath)
+    }
+
+    $doc.Save($configFile)
+}
 
 <#
     .DESCRIPTION
@@ -110,40 +178,105 @@ function Add-XmlConfigValue
     param( 
         [parameter(Mandatory=$true,position=0)] [string] $configFile,
         [parameter(Mandatory=$true,position=1)] [string] $xpath,
-        [parameter(Mandatory=$true,position=2)] [string] $newnode,
-        [parameter(Mandatory=$false,position=3)] [hashtable] $attributes
+        [parameter(Mandatory=$true,position=2)] [string] $newNode,        
+        [parameter(Mandatory=$false,position=4)] [hashtable] $attributes
     )
 
     $ErrorActionPreference = "Stop"
     
     $doc = New-Object System.Xml.XmlDocument;
     $doc.Load($configFile)
-
     $nodes = $doc.SelectNodes($xpath)
 
     foreach ($node in $nodes) {
         if ($node -ne $null) {
-
-            $nodeChild = $doc.CreateElement($newnode)
+			
+			Write-Host "adding $newNode to node: $xpath"
+			$nodeChild = $doc.CreateElement($newNode)
+            $node.AppendChild($nodeChild) #| Out-Null
             if ($attributes)
             {
                 foreach($attributekey in $attributes.Keys)
                 {
                     $nodeChild.SetAttribute($attributekey, $attributes[$attributekey])
                 }
-            }
+            }        
+        }
+        else {
+            Write-Host "$xpath wasn't found"
+        }
+    }
+    $doc.Save($configFile) 
+}
 
-            $node.AppendChild($nodeChild) | Out-Null
-        
-            Write-Host "Add '$newnode' node into '$xpath' node"
+<#
+    .DESCRIPTION
+        Will parse an XML config file and add a xml section at a xpath expression.
+
+    .EXAMPLE
+        Add-ConfigValues "C:\temp\somefile.config" "//SomeNode/AnotherNode" "SomeNewNode" @{"key0"="value0";"key1"="value1"}
+
+    .PARAMETER configFile
+        A path to a file that is XML based
+
+    .PARAMETER xpath
+        Any valid XPath exression, whether result in 1 or many matches, must be an Element.
+
+    .PARAMETER newnode
+        Any valid XML node name that you wish to add.
+
+    .PARAMETER attributes
+        Hashtable of attributes for the new node being created
+
+    .SYNOPSIS
+        Updates a XML file with the value specified at the XPath expression specified..
+        If the section already exists it will not create it but update it...
+    .NOTES
+        Nothing yet...
+#>
+function Add-XmlSection
+{
+    [CmdletBinding()]
+    param( 
+        [parameter(Mandatory=$true,position=0)] [string] $configFile,
+        [parameter(Mandatory=$true,position=1)] [string] $xpath,
+        [parameter(Mandatory=$true,position=2)] [string] $sectionName,        
+        [parameter(Mandatory=$false,position=4)] [hashtable] $attributes
+    )
+
+    $ErrorActionPreference = "Stop"
+    
+    $doc = New-Object System.Xml.XmlDocument;
+    $doc.Load($configFile)
+    $nodes = $doc.SelectNodes($xpath)
+
+    foreach ($node in $nodes) {
+        if ($node -ne $null) {
+			$nodeXpath = "$xpath/$sectionName"
+            $nodeFound = $doc.SelectNodes($nodeXpath)
+
+            if ($nodeFound.Count -eq 0)
+            {
+                $nodeChild = $doc.CreateElement($sectionName)
+                $node.AppendChild($nodeChild) | Out-Null
+            }
+            else {			
+                $nodeChild = $nodeFound[0]
+            }
+            if ($attributes)
+            {
+                foreach($attributekey in $attributes.Keys)
+                {
+                    $nodeChild.SetAttribute($attributekey, $attributes[$attributekey])
+                }
+            }        
         }
         else {
             Write-Host "$xpath wasn't found"
         }
     }
 
-    $doc.Save($configFile)
-
+    $doc.Save($configFile) 
 }
 
 <#
@@ -155,8 +288,6 @@ function Invoke-XmlDocumentTransform
 {
     [CmdletBinding()]
     param(
-
-
         [Parameter(Mandatory=$true, Position=1)] 
         [string] $inputPathAndFile,
         

@@ -30,12 +30,23 @@ $appcmd = "$env:windir\system32\inetsrv\appcmd.exe"
 function New-Site{
     [CmdletBinding()]
     param(
-        [parameter(Mandatory=$true,position=0)] [string] $siteName,
-        [parameter(Mandatory=$true,position=1)] [string] $sitePath,
-        [parameter(Mandatory=$true,position=3)] [object[]] $bindings,
-        [parameter(Mandatory=$true,position=5)] [string] $appPoolName,
-        [parameter(Mandatory=$false,position=6)] [switch] $updateIfFound
+        [parameter(Mandatory=$true,position=0, ParameterSetName="a")] [string] $siteName,
+        [parameter(Mandatory=$true,position=0, ParameterSetName="b")] [Xml.XmlElement] $websiteSettings,
+		
+		[parameter(Mandatory=$true,position=1, ParameterSetName="a")]
+        [parameter(Mandatory=$true,position=1, ParameterSetName="b")] [string] $sitePath,
+		
+        [parameter(Mandatory=$true,position=2, ParameterSetName="a")] [object[]] $bindings,
+        [parameter(Mandatory=$true,position=3, ParameterSetName="a")] [string] $appPoolName,
+
+        [parameter(Mandatory=$false,position=4, ParameterSetName="a")] 
+        [parameter(Mandatory=$false,position=2, ParameterSetName="b")] [switch] $updateIfFound
     )
+
+    if($PsCmdlet.ParameterSetName -eq 'b'){
+        New-Site -siteName $($websiteSettings.siteName) -sitePath $sitePath -bindings $($websiteSettings.bindings) -appPoolName $($websiteSettings.appPool.name) $updateIfFound
+        return
+    }
 
     Write-Host "Creating Site: $siteName" -NoNewLine
     $exists = Confirm-SiteExists $siteName
