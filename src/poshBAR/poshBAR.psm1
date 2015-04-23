@@ -1,4 +1,4 @@
-$version = "1.1.1" # contains the current version of poshBAR
+$version = '1.0.3.61' # contains the current version of poshBAR
 $script:poshBAR = @{}
 Write-Host "`nposhBAR version $version `nCopyright ($([char]0x00A9)) Future State Mobile Inc. & Contributors`n"
 

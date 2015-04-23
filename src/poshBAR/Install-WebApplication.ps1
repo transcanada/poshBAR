@@ -45,14 +45,23 @@ function Install-WebApplication() {
         Approve-Permissions "$appFilePath/App_Data" $($websiteSettings.appPool.userName) "modify"
     }
 
-    New-AppPool $($websiteSettings.appPool.name) $($websiteSettings.appPool.identityType) $($websiteSettings.appPool.maxWorkerProcesses) $($websiteSettings.appPool.userName) $($websiteSettings.appPool.password)
+    #Always Running
+    
+    $alwaysRunning = $false
+    #ensure the autostart & autostart.enabled elements exist
+    if ($websiteSettings.autoStart -and $websiteSettings.autoStart.enabled){
+        if ($websiteSettings.autoStart.enabled -eq "true") {
+            $alwaysRunning = $true
+        }
+    }
 
-    New-Site $($websiteSettings.siteName) $siteFilePath ($websiteSettings.bindings) $($websiteSettings.appPool.name) -updateIfFound
+    New-AppPool $websiteSettings -alwaysRunning:$alwaysRunning
+
+    New-Site $websiteSettings $siteFilePath -updateIfFound
     Set-IISAuthentication $websiteSettings.iisAuthenticationTypes true $($websiteSettings.siteName)
-    
-    
+         
     if ( ($websiteSettings.appPath.length -gt 0) -and ($websiteSettings.appPath -ne "/") -and ($websiteSettings.appPath -ne "\") ) {
-        New-Application $($websiteSettings.siteName) $($websiteSettings.appPath) $appFilePath $($websiteSettings.appPool.name) -updateIfFound
+        New-Application $websiteSettings $appFilePath -updateIfFound
 
         $siteAndUriPath = $($websiteSettings.siteName) + "/" + $($websiteSettings.appPath)
         Set-IISAuthentication $websiteSettings.iisAuthenticationTypes true $($siteAndUriPath)
