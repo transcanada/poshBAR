@@ -106,10 +106,10 @@ foreach ($c in $commandsHelp) {@"
 						<p class="lead">$syn</p>
 "@
 	}
-@"
+@'
 					</div>
 				    <div class=`"row`">
-"@
+'@
 	if (!($c.syntax | Out-String ).Trim().Contains('syntaxItem')) {@"
 						<div class=`"col-md-12`">
 							<h2> Syntax </h2>
@@ -185,7 +185,7 @@ foreach ($c in $commandsHelp) {@"
 @"
 							<h3>$(FixString($example.title.Trim(('-',' '))))</h3>
 							<pre>$(FixString($example.code | out-string ).Trim())</pre>
-							<div>$(FixString($example.remarks | out-string -Width 2000).Trim())</div>
+							<div>$(FixString($example.remarks | out-string).Trim())</div>
 "@
 		}
 @"

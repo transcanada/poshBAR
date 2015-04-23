@@ -5,9 +5,13 @@ $appcmd = "$env:windir\system32\inetsrv\appcmd.exe"
         Will create a Website with the specified settings if one doesn't exist.
 
     .EXAMPLE
-        $b = @{"protocol" = "http"; "port" = 80; "hostName"="mysite.com"}
-        $bindings = @($b)
-        New-Site "myWebsite.com" "c:\inetpub\wwwroot" $bindings "myAppPool" -updateIfFound
+        New-Site "myWebsite.com" "c:\inetpub\wwwroot" @{"protocol" = "http"; "port" = 80; "hostName"="mysite.com"} "myAppPool" -updateIfFound
+
+    .EXAMPLE
+        New-Site $websiteNode "c:\inetpub\wwwroot" "myAppPool" -updateIfFound
+
+    .PARAMETER websiteSettings
+        An xml node containing all of the required data for setting up a new site. See the NOTES section for more details.
 
     .PARAMETER siteName
         The name of the Website that we are creating.
@@ -26,6 +30,9 @@ $appcmd = "$env:windir\system32\inetsrv\appcmd.exe"
         
     .SYNOPSIS
         Will setup a web application under the specified Website and AppPool.
+
+    .NOTES
+        The $websiteSettings node is part of an opinionated xml structure used to house configuration data for environments.
 #>
 function New-Site{
     [CmdletBinding()]
