@@ -1,12 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
-            xmlns:tns="https://futurestatemobile.github.io/poshBAR/" 
-            attributeFormDefault="qualified" 
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            xmlns:tns="urn:poshBAR" 
+            targetNamespace="urn:poshBAR"
             elementFormDefault="qualified" 
-            version="1.0" 
-            targetNamespace="https://futurestatemobile.github.io/poshBAR/">
+            attributeFormDefault="unqualified" >
 
-   <!-- Website -->
+   <!-- Website Object -->
+   <xsd:complexType name="webSites">
+      <xsd:sequence>
+         <xsd:element minOccurs="0" maxOccurs="unbounded" name="Website" nillable="true" type="tns:Website" />
+      </xsd:sequence>
+   </xsd:complexType>
+   <xsd:element name="Website" nillable="true" type="tns:Website" />
    <xsd:complexType name="Website">
       <xsd:sequence>
          <xsd:sequence>
@@ -56,41 +61,26 @@
                   </xsd:sequence>
                </xsd:complexType>
             </xsd:element>
-            <xsd:element name="mail">
-               <xsd:complexType>
-                  <xsd:sequence>
-                     <xsd:element name="Server" type="xsd:string" />
-                     <xsd:element name="NotificationEmailFrom" type="xsd:string" />
-                     <xsd:element name="NotificationEmailTo" type="xsd:string" />
-                     <xsd:element name="NotificationEnabled" type="xsd:boolean" />
-                  </xsd:sequence>
-               </xsd:complexType>
-            </xsd:element>
+            <xsd:any minOccurs="0" maxOccurs="unbounded" namespace="##any" processContents="lax"/>
          </xsd:sequence>
       </xsd:sequence>
+      <xsd:attribute type="xsd:string" name="name"/>
    </xsd:complexType>
-   <xsd:element name="Website" nillable="true" type="tns:Website" />
 
-   <!-- Database  -->
-   <xsd:complexType name="Database">
-      <xsd:sequence>
-         <xsd:element name="connectionString" type="xsd:string" />
-      </xsd:sequence>
-   </xsd:complexType>
-   <xsd:element name="Database" nillable="true" type="tns:Database" />
-
-
-   <!-- do not alter below this point-->
+   <!-- Database Object -->
    <xsd:complexType name="databases">
       <xsd:sequence>
          <xsd:element minOccurs="0" maxOccurs="unbounded" name="Database" nillable="true" type="tns:Database" />
       </xsd:sequence>
    </xsd:complexType>
-   <xsd:complexType name="webSites">
+   <xsd:complexType name="Database">
       <xsd:sequence>
-         <xsd:element minOccurs="0" maxOccurs="unbounded" name="Website" nillable="true" type="tns:Website" />
+         <xsd:element name="connectionString" type="xsd:string" />
+         <xsd:any minOccurs="0" maxOccurs="unbounded" namespace="##any" processContents="lax"/>
       </xsd:sequence>
+      <xsd:attribute type="xsd:string" name="name"/>
    </xsd:complexType>
+   <xsd:element name="Database" nillable="true" type="tns:Database" />
 
    <!-- Final Block -->
    <xsd:element name="environmentSettings">
