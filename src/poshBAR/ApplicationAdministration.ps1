@@ -232,3 +232,55 @@ function Get-Applications{
     $getApp = "$appcmd list Apps"
     Invoke-Expression $getApp
 }
+
+
+<#
+
+    .DESCRIPTION
+        Will change authentication state for a web application under the specified Website.
+
+    .EXAMPLE
+        Set-Application-Authentication 'Default Web Site' 'Sample' 'basic' 'false'
+
+    .PARAMETER siteName
+        The name of the website that contains this application.
+
+	.PARAMETER appName
+        The name of the application.
+		
+    .PARAMETER authenticationType
+        The type of authentication (basic, windows, anonymous, etc.)
+
+    .PARAMETER enabled
+        The new state that will be set to the authentication type for the site (true or false).
+		
+#>
+function Set-Application-Authentication 
+{
+    [CmdletBinding()]
+    param(
+        [parameter( Mandatory=$true, position=0 )] [string] $siteName,
+        [parameter( Mandatory=$true, position=1 )] [string] $appName,
+        [parameter( Mandatory=$true, position=2 )] [string] $authenticationType,
+		[parameter( Mandatory=$true, position=3 )] [string] $enabled
+    )
+	
+	$authenticationType = $authenticationType + "Authentication"; 
+
+    $ErrorActionPreference = "Stop"
+
+    Write-Host "Setting: $authenticationType to $siteName/$appName" -NoNewLine
+    $exists = Confirm-ApplicationExists $siteName $appName
+    
+    if ($exists) {
+        if($poshBAR.DisableCreateIISApplication) {
+            throw $msgs.error_webapplication_creation_disabled
+        }
+
+		Invoke-Expression  "$appcmd set config '$siteName/$appName' -section:system.webServer/security/authentication/$authenticationType /enabled:$enabled  /commit:apphost"
+        Write-Host "`tDone" -f Green
+    }else{
+        Write-Host "" #forces a new line
+        Write-Warning ($msgs.cant_find -f "Application", "$siteName/$appName")
+    }
+}
