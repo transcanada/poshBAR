@@ -168,6 +168,7 @@ Export-ModuleMember `
           'Stop-Application',
           'Stop-AppPool',
           'Stop-Site',
+		  'Set-Application-Authentication',
           'Test-PathExtended',
           'Test-RunAsAdmin',
           'Update-Application',
