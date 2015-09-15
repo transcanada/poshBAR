@@ -197,3 +197,20 @@ function Reset-OracleDatabase {
     }    
     New-OracleDatabase $schemaName $databaseStorageFile $schemaOwnerUserId $schemaOwnerPassword $connectionString    		
 }
+
+<#
+    .SYNOPSIS
+        Restores Database Backup
+        
+    .PARAMETER $parFile
+        Parameters file for restoring options
+        
+    .EXAMPLE
+       Restore-OracleDatabase 'import.par'
+#>
+function Restore-OracleDatabase {
+    param(        
+        [parameter(Mandatory=$true,position=2)] [string] $parFile
+	)
+    impdp -parfile $parFile
+}
