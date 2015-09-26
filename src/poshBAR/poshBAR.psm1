@@ -157,6 +157,7 @@ Export-ModuleMember `
           'Remove-AppPool',
           'Remove-Site',
           'RequiredWindowsFeatures',
+          'Set-Application-Authentication',
           'Set-IISAuthentication',
           'Set-IISCustomHeader',
           'Invoke-PowershellScriptSigning',
