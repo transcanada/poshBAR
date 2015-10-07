@@ -41,7 +41,7 @@ function Add-HostsFileEntry
     Write-Host ($msgs.msg_add_host_entry -f $hostName) -NoNewLine
 
 	$HostsLocation = "$env:windir\System32\drivers\etc\hosts"
-	$NewHostEntry = "`t$ipAddress`t$hostName"
+	$NewHostEntry = "`n`t$ipAddress`t$hostName"
 
 	if((gc $HostsLocation) -contains $NewHostEntry)
 	{
